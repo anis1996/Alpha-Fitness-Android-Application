@@ -15,6 +15,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAbjkqQCRQ0u8KolQSw8KpP5xdyUJtRH0E" />
         <activity android:name=".RecordWorkout">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
