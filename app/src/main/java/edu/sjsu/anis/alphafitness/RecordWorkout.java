@@ -1,11 +1,12 @@
 package edu.sjsu.anis.alphafitness;
 
-import android.content.res.Configuration;
-import android.support.v4.app.Fragment;
 
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AppCompatActivity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
 public class RecordWorkout extends AppCompatActivity {
 
@@ -14,21 +15,20 @@ public class RecordWorkout extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record_workout);
 
-        FragmentManager fm = getSupportFragmentManager();
+        Configuration config = getResources().getConfiguration();
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction =
+                fragmentManager.beginTransaction();
+        Fragment fragment = fragmentManager.findFragmentById(R.id.fragmentcontainer);
 
-
-        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-
-
+        if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            fragment = new BlankFragment();
+            fragmentTransaction.replace(R.id.fragmentcontainer,fragment);
         } else {
-
-            Fragment fragment = fm.findFragmentById(R.id.fragmentcontainer);
-                fragment = new WorkoutFragment();
-                fm.beginTransaction()
-                        .replace(R.id.fragmentcontainer, fragment)
-                        .commit();
-
+            fragment = new WorkoutFragment();
+            fragmentTransaction.replace(R.id.fragmentcontainer, fragment);
         }
 
+        fragmentTransaction.commit();
     }
 }

@@ -155,7 +155,7 @@
                     android:id="@+id/layout_mapContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
+                    android:layout_margin="0dp"
                     android:layout_weight="0"
                     android:background="@android:color/transparent"
                     android:orientation="vertical" >
@@ -164,12 +164,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent" />
-                    <!--
+
                     <com.google.android.gms.maps.MapView
                         android:id="@+id/map"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"/>
-                        -->
+
 
                 </FrameLayout>
 
