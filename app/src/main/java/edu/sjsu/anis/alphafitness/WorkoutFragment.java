@@ -44,6 +44,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
  */
 public class WorkoutFragment extends Fragment {
 
+    static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 10001;
     //Google Map
     private GoogleMap googleMap;
     private LocationManager locationManager;
@@ -86,25 +87,32 @@ public class WorkoutFragment extends Fragment {
                 criteria.setPowerRequirement(Criteria.POWER_LOW);
                 String locationProvider = locationManager.getBestProvider(criteria, true);
 
+                /*
+                 * Request location permission, so that we can get the location of the
+                 * device. The result of the permission request is handled by a callback,
+                 * onRequestPermissionsResult.
+                 */
                 if (ActivityCompat.checkSelfPermission(getActivity(),
                         Manifest.permission.ACCESS_FINE_LOCATION)
                         != PackageManager.PERMISSION_GRANTED
                         && ActivityCompat.checkSelfPermission(getActivity(),
                         Manifest.permission.ACCESS_COARSE_LOCATION)
                         != PackageManager.PERMISSION_GRANTED) {
-                    Log.d("TAG", "Current location is null. Using defaults.");
-                    return;
+
+                    ActivityCompat.requestPermissions(getActivity(),
+                            new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                            PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+
                 }
-                mMap.setMyLocationEnabled(true);
+
 
                 location = locationManager.getLastKnownLocation(locationProvider);
                 LatLng here = new LatLng(location.getLatitude(), location.getLongitude());
                 mMap.addMarker(new MarkerOptions().position(here).title("my address"));
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(here));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(here,
+                        19));
 
-                // For zooming automatically to the location of the marker
-//                CameraPosition cameraPosition = new CameraPosition.Builder().target(sydney).zoom(12).build();
-//                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             }
         });
 
