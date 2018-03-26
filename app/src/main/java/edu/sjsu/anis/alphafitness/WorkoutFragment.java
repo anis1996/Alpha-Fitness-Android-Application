@@ -102,6 +102,7 @@ public class WorkoutFragment extends Fragment {
                     ActivityCompat.requestPermissions(getActivity(),
                             new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                             PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+                    return ;
 
                 }
 
