@@ -4,9 +4,11 @@ package edu.sjsu.anis.alphafitness;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 
 public class RecordWorkout extends AppCompatActivity {
 
@@ -31,4 +33,10 @@ public class RecordWorkout extends AppCompatActivity {
 
         fragmentTransaction.commit();
     }
+
+    public void openProfile(View view) {
+        Intent intent = new Intent(this, ProfileActivity.class);
+        startActivity(intent);
+    }
+
 }
