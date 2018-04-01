@@ -29,6 +29,13 @@
         android:layout_gravity="center"
         android:layout_marginStart="20dp"
         android:id="@+id/username" />
+    <Button
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:text="SAVE"
+        android:onClick="saveProfile"
+        android:layout_gravity="center"/>
 </LinearLayout>
 
 
@@ -70,7 +77,8 @@
         android:layout_height="wrap_content"
         android:text="150"
         android:textSize="20dp"
-        android:id="@+id/editText2"
+        android:inputType="number"
+        android:id="@+id/weight"
       />
 
         <TextView
@@ -384,5 +392,6 @@
         </RelativeLayout>
 
     </TableLayout>
+
 
 </LinearLayout>

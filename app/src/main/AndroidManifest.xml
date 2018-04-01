@@ -28,6 +28,14 @@
             </intent-filter>
         </activity>
         <activity android:name=".ProfileActivity"></activity>
+
+
+        <provider
+            android:name=".MyContentProvider"
+            android:authorities="com.example.anis.alphafitness"
+            android:enabled="true"
+            android:exported="true" />
+
     </application>
 
 </manifest>

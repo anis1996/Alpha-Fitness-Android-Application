@@ -26,7 +26,7 @@ public class MyDataBase extends SQLiteOpenHelper {
 
         String CREATE_AVERAGE_WEEKLY_TABLE = "CREATE TABLE " + Contracts.TABLE_AVERAGE_WEEKLY + "("
                 + Contracts._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + Contracts.KEY_NAME + " TEXT PRIMARY KEY,"
+                + Contracts.KEY_NAME + " TEXT,"
                 + Contracts.KEY_GENDER + " TEXT,"
                 + Contracts.KEY_WEIGHT + " INT,"
                 + Contracts.KEY_DISTANCE + " FLOAT,"

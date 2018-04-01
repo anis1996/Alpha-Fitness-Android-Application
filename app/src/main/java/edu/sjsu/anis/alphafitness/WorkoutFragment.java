@@ -2,15 +2,19 @@ package edu.sjsu.anis.alphafitness;
 
 import android.Manifest;
 import android.app.Fragment;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 
 import android.util.Log;
@@ -39,6 +43,9 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import edu.sjsu.anis.alphafitness.DataBase.RecordContract.Contracts;
+
+
 
 /**
  */
@@ -50,11 +57,19 @@ public class WorkoutFragment extends Fragment {
     private LocationManager locationManager;
     Location location;
 
+
+
+
+
+    private SharedPreferences sharedPreferences;
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_workout, container, false);
+        defaultDatabase();
 
         MapView mMapView = (MapView) view.findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
@@ -119,6 +134,20 @@ public class WorkoutFragment extends Fragment {
 
         return view;
 
+    }
+
+    public void defaultDatabase() {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(Contracts.KEY_NAME, "Anis Dhapa");
+        contentValues.put(Contracts.KEY_GENDER, "Male");
+        contentValues.put(Contracts.KEY_WEIGHT, 150);
+        contentValues.put(Contracts.KEY_DISTANCE, 0);
+        contentValues.put(Contracts.KEY_CALORIES_BURNED, 0);
+        contentValues.put(Contracts.KEY_NUM_OF_WORKOUTS, 0);
+        contentValues.put(Contracts.KEY_TIME, "0");
+
+
+        getActivity().getContentResolver().insert(MyContentProvider.CONTENT_URI, contentValues);
     }
 
 
