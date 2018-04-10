@@ -92,6 +92,7 @@ public class WorkoutFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d("CCCCCCCCCCCCCCCCCCCCCC", "CREATE CCCCCCC");
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_workout, container, false);
         defaultDatabase(); // inserting default data if table is empty
@@ -147,10 +148,12 @@ public class WorkoutFragment extends Fragment {
 
 
                 }
+
                 googleMap.setMyLocationEnabled(true);
 
                 fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
                 Task locationResult = fusedLocationProviderClient.getLastLocation();
+
                 locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener() {
                     @Override
                     public void onComplete(@NonNull Task task) {
@@ -177,14 +180,10 @@ public class WorkoutFragment extends Fragment {
                         }
                     }
                 });
-//                location = locationManager.getLastKnownLocation(locationProvider);
-//                LatLng here = new LatLng(location.getLatitude(), location.getLongitude());
-//                mMap.addMarker(new MarkerOptions().position(here).title("my address") .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-//                mMap.moveCamera(CameraUpdateFactory.newLatLng(here));
-//                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(here,
-//                        19));
             }
         });
+
+
 
         recordButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -227,8 +226,13 @@ public class WorkoutFragment extends Fragment {
         getActivity().getContentResolver().insert(MyContentProvider.CONTENT_URI, contentValues);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d("CCCCCCCCCCCCCCCCCCCCCC", "RESUME CCCCCCC");
 
 
+    }
 
     public Runnable timerRunnable = new Runnable() {
         @Override
