@@ -2,9 +2,11 @@ package edu.sjsu.anis.alphafitness;
 
 import android.Manifest;
 import android.app.Fragment;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -16,6 +18,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.RemoteException;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
@@ -53,8 +58,11 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.util.ArrayList;
+
 import edu.sjsu.anis.alphafitness.DataBase.RecordContract.Contracts;
 
+import static android.content.Context.BIND_AUTO_CREATE;
 
 
 /**
@@ -84,9 +92,35 @@ public class WorkoutFragment extends Fragment {
     long mSecondTime, startTime, updateTime;
     long TimeBuff = 0L;
 
-    Handler handler;
+
+    //
+    static Handler handler;
+    static Handler polyLineHandler;
+
 
     private SharedPreferences sharedPreferences;
+
+    IMyAidlInterface remoteService;
+    RemoteConnection remoteConnection = null;
+
+
+    class RemoteConnection implements ServiceConnection {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            remoteService = IMyAidlInterface.Stub.asInterface((IBinder) service);
+            Toast.makeText(getActivity(),
+                    "Remote Service connected.", Toast.LENGTH_LONG).show();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            remoteService = null;
+//            Toast.makeText(MainActivity.this,
+//                    "Remote Service disconnected.", Toast.LENGTH_LONG).show();
+        }
+    }
+
 
 
     @Override
@@ -96,7 +130,7 @@ public class WorkoutFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_workout, container, false);
         defaultDatabase(); // inserting default data if table is empty
-        handler = new Handler();
+
         record = true;
 
         timer = (TextView) view.findViewById(R.id.duration);
@@ -117,6 +151,9 @@ public class WorkoutFragment extends Fragment {
         {
            return view;
         }
+
+
+
         mMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap mMap) {
@@ -126,8 +163,8 @@ public class WorkoutFragment extends Fragment {
                 locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
                 Criteria criteria = new Criteria();
-                criteria.setAccuracy(Criteria.ACCURACY_FINE);
-//               criteria.setPowerRequirement(Criteria.POWER_LOW);
+//                criteria.setAccuracy(Criteria.ACCURACY_FINE);
+//                criteria.setPowerRequirement(Criteria.POWER_LOW);
                 String locationProvider = locationManager.getBestProvider(criteria, true);
 
                 /*
@@ -185,25 +222,77 @@ public class WorkoutFragment extends Fragment {
 
 
 
+        handler = new Handler()
+        {
+            @Override
+            public void handleMessage(Message msg) {
+                timer.setText((String) msg.obj);
+
+            }
+        };
+
+        polyLineHandler = new Handler()
+        {
+            @Override
+            public void handleMessage(Message msg) {
+
+                ArrayList<LatLng> points = (ArrayList<LatLng> ) msg.obj;
+                googleMap.clear();  //clears all Markers and Polylines
+
+                PolylineOptions options = new PolylineOptions().width(10).color(Color.RED).geodesic(true);
+                for (int i = 0; i < points.size() - 1; i++) {
+                    LatLng point = points.get(i);
+                    options.add(point);
+                }
+
+                googleMap.addPolyline(options); //add Polyline
+
+            }
+        };
+
+
+        remoteConnection = new RemoteConnection();
+        Intent intent = new Intent();
+        intent.setClassName("edu.sjsu.anis.alphafitness",
+               edu.sjsu.anis.alphafitness.MyService.class.getName());
+
+        if (!getActivity().bindService(intent, remoteConnection, BIND_AUTO_CREATE)) {
+            Toast.makeText(getActivity(),
+                    "Fail to bind the remote service.", Toast.LENGTH_LONG).show();
+        }
+
+
         recordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(record )
                 {
-                    recordButton.setText("STOP WORKOUT");
+                    recordButton.setText(" STOP WORKOUT ");
                     startTime = SystemClock.uptimeMillis();
-                    handler.postDelayed(timerRunnable, 10);
+                   // handler.postDelayed(timerRunnable, 10);
+                    String result = "";
+                    try {
+                        remoteService.startWorkout(startTime);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
                     record = false;
                 }else
                 {
                     record = true ;
-                    recordButton.setText("START WORKOUT");
+                    try {
+                        remoteService.stopWorkout();
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                    recordButton.setText(" START WORKOUT ");
                     mSecondTime = 0L;
                     seconds = 0;
                     minutes = 0;
                     mSeconds = 0;
                     timer.setText("00:00:00");
-                    handler.removeCallbacks(timerRunnable);
+
+//                    handler.removeCallbacks(timerRunnable);
                 }
             }
         });
@@ -234,18 +323,22 @@ public class WorkoutFragment extends Fragment {
 
     }
 
-    public Runnable timerRunnable = new Runnable() {
-        @Override
-        public void run() {
-            mSecondTime = SystemClock.uptimeMillis() - startTime;
-            updateTime = TimeBuff + mSecondTime;
-            seconds = (int) (updateTime / 1000);
-            minutes = seconds / 60;
-            seconds = seconds % 60;
-            mSeconds = (int) (updateTime % 100);
-            timer.setText(String.format("" + String.format("%02d", minutes) + ":" + String.format("%02d", seconds)
-                    + ":" + String.format("%02d", mSeconds)));
-            handler.postDelayed(this, 0);
-        }
-    };
+//    public Runnable timerRunnable = new Runnable() {
+//        @Override
+//        public void run() {
+//            mSecondTime = SystemClock.uptimeMillis() - startTime;
+//            updateTime = TimeBuff + mSecondTime;
+//            seconds = (int) (updateTime / 1000);
+//            minutes = seconds / 60;
+//            seconds = seconds % 60;
+//            mSeconds = (int) (updateTime % 100);
+//            timer.setText(String.format("" + String.format("%02d", minutes) + ":" + String.format("%02d", seconds)
+//                    + ":" + String.format("%02d", mSeconds)));
+//            handler.postDelayed(this, 0);
+//        }
+//    };
+
+
+
+
 }
