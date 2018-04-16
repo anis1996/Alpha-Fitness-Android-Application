@@ -15,6 +15,7 @@ import android.os.Message;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -39,6 +40,9 @@ public class MyService extends Service {
     IMyAidlInterface.Stub mBinder;
 
 
+
+    public static Boolean stat = true;
+
     public MyService() {
     }
 
@@ -50,13 +54,12 @@ public class MyService extends Service {
 
        mBinder = new IMyAidlInterface.Stub() {
            @Override
-           public void startWorkout(long s) throws RemoteException {
+           public void startWorkout() throws RemoteException {
                startTime = SystemClock.uptimeMillis();
                WorkoutFragment.handler.postDelayed(timerRunnable,20);
                points = new ArrayList<LatLng>();
+               stat = true;
                WorkoutFragment.polyLineHandler.postDelayed(locationRunnable,20);
-
-
 
                return ;
            }
@@ -64,6 +67,7 @@ public class MyService extends Service {
            @Override
            public void stopWorkout() throws RemoteException{
                WorkoutFragment.handler.removeCallbacks(timerRunnable);
+               stat = false;
                Message msg1 = new Message();
                msg1.obj = "00:00:00";
                mSecondTime = 0L;
@@ -71,6 +75,7 @@ public class MyService extends Service {
                minutes = 0;
                mSeconds = 0;
                points.clear();
+               Log.d("CCCCCCCCCCCCCCCCCCCCCC", "INSIDE STOPWOROUT");
                WorkoutFragment.polyLineHandler.removeCallbacks(locationRunnable);
                WorkoutFragment.handler.sendMessage(msg1);
 
@@ -103,19 +108,11 @@ public class MyService extends Service {
                     Manifest.permission.ACCESS_COARSE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
                 return;
             }
 
             location = locationManager.getLastKnownLocation(locationProvider);
-
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-
             points.add(latLng);
             Message locationMsg = new Message();
             locationMsg.obj = points;
@@ -128,18 +125,21 @@ public class MyService extends Service {
     public Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
-            mSecondTime = SystemClock.uptimeMillis() - startTime;
-            updateTime = TimeBuff + mSecondTime;
-            seconds = (int) (updateTime / 1000);
-            minutes = seconds / 60;
-            seconds = seconds % 60;
-            mSeconds = (int) (updateTime % 100);
-            result = String.format("" + String.format("%02d", minutes) + ":" + String.format("%02d", seconds)
-                    + ":" + String.format("%02d", mSeconds));
-            Message msg = new Message();
-            msg.obj = result;
-            WorkoutFragment.handler.sendMessage(msg);
-            WorkoutFragment.handler.postDelayed(this, 10);
+
+            if(stat) {
+                mSecondTime = SystemClock.uptimeMillis() - startTime;
+                updateTime = TimeBuff + mSecondTime;
+                seconds = (int) (updateTime / 1000);
+                minutes = seconds / 60;
+                seconds = seconds % 60;
+                mSeconds = (int) (updateTime % 100);
+                result = String.format("" + String.format("%02d", minutes) + ":" + String.format("%02d", seconds)
+                        + ":" + String.format("%02d", mSeconds));
+                Message msg = new Message();
+                msg.obj = result;
+                WorkoutFragment.handler.sendMessage(msg);
+                WorkoutFragment.handler.postDelayed(this, 10);
+            }
         }
     };
 }

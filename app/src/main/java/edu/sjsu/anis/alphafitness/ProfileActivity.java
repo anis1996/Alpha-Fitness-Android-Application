@@ -68,10 +68,7 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     public boolean onOptionsItemSelected(MenuItem item){
-//        Intent myIntent = new Intent(getApplicationContext()
-//                , RecordWorkout.class);
-//        startActivityForResult(myIntent, 0);
-//        return true;
+
         switch (item.getItemId()) {
             // Respond to the action bar's Up/Home button
             case android.R.id.home:
@@ -93,9 +90,6 @@ public class ProfileActivity extends AppCompatActivity {
 
         getContentResolver().update(MyContentProvider.CONTENT_URI, contentValues, "_id = ?", new String[] {"1"});
 
-
-//        Toast.makeText(this, "we are in ",
-//                Toast.LENGTH_LONG).show();
 
     }
 

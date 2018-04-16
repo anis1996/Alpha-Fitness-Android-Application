@@ -54,6 +54,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -63,6 +64,8 @@ import java.util.ArrayList;
 import edu.sjsu.anis.alphafitness.DataBase.RecordContract.Contracts;
 
 import static android.content.Context.BIND_AUTO_CREATE;
+import static android.content.Context.MODE_PRIVATE;
+import static java.lang.Math.abs;
 
 
 /**
@@ -84,13 +87,10 @@ public class WorkoutFragment extends Fragment {
     private LocationManager locationManager;
     Location location;
     private FusedLocationProviderClient fusedLocationProviderClient;
+    ArrayList<LatLng> points = new ArrayList<>();
 
 
 
-    //Timer
-    int mSeconds, seconds, minutes;
-    long mSecondTime, startTime, updateTime;
-    long TimeBuff = 0L;
 
 
     //
@@ -152,6 +152,15 @@ public class WorkoutFragment extends Fragment {
            return view;
         }
 
+        SharedPreferences prefs = getActivity().getSharedPreferences("mySharedPref", MODE_PRIVATE);
+        Boolean recordWorkout = prefs.getBoolean("recordWorkout", false);
+
+        if(!recordWorkout)
+        {
+            Log.d("CCCCCCCCCCCCCCCCCCCCCC", "SharedPre");
+            recordButton.setText(" STOP WORKOUT ");
+            record = false;
+        }
 
 
         mMapView.getMapAsync(new OnMapReadyCallback() {
@@ -163,8 +172,8 @@ public class WorkoutFragment extends Fragment {
                 locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
                 Criteria criteria = new Criteria();
-//                criteria.setAccuracy(Criteria.ACCURACY_FINE);
-//                criteria.setPowerRequirement(Criteria.POWER_LOW);
+                criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                criteria.setPowerRequirement(Criteria.POWER_LOW);
                 String locationProvider = locationManager.getBestProvider(criteria, true);
 
                 /*
@@ -209,8 +218,6 @@ public class WorkoutFragment extends Fragment {
                                 Toast.makeText(getActivity(), "Cannot get current location. Please turn on GPS or allow permission request.", Toast.LENGTH_SHORT).show();
                             }
                         } else {
-                            Log.d("TAG", "Current location is null. Using defaults.");
-                            Log.e("TAG", "Exception: %s", task.getException());
                             LatLng mDefaultLocation = new LatLng(30, -121); //Default is San Jose
                             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation,19));
                             googleMap.getUiSettings().setMyLocationButtonEnabled(false);
@@ -236,17 +243,21 @@ public class WorkoutFragment extends Fragment {
             @Override
             public void handleMessage(Message msg) {
 
-                ArrayList<LatLng> points = (ArrayList<LatLng> ) msg.obj;
-                googleMap.clear();  //clears all Markers and Polylines
+///                points = (ArrayList<LatLng> ) msg.obj;
+
 
                 PolylineOptions options = new PolylineOptions().width(10).color(Color.RED).geodesic(true);
-                for (int i = 0; i < points.size() - 1; i++) {
+                for (int i = 0; i < points.size() ; i++) {
                     LatLng point = points.get(i);
                     options.add(point);
                 }
+                if(googleMap.getMyLocation() != null) {
+                    points.add(new LatLng(googleMap.getMyLocation().getLatitude(), googleMap.getMyLocation().getLongitude()));
+                    Polyline line = googleMap.addPolyline(options);
 
-                googleMap.addPolyline(options); //add Polyline
 
+                    line.setPoints(points);
+                }
             }
         };
 
@@ -265,33 +276,39 @@ public class WorkoutFragment extends Fragment {
         recordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SharedPreferences.Editor editor = getActivity().getSharedPreferences("mySharedPref", MODE_PRIVATE).edit();
                 if(record )
                 {
+
                     recordButton.setText(" STOP WORKOUT ");
-                    startTime = SystemClock.uptimeMillis();
                    // handler.postDelayed(timerRunnable, 10);
                     String result = "";
                     try {
-                        remoteService.startWorkout(startTime);
+
+                        remoteService.startWorkout();
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
+
+                    editor.putBoolean("recordWorkout", false);
+                    editor.apply();
                     record = false;
                 }else
                 {
+
                     record = true ;
                     try {
                         remoteService.stopWorkout();
+
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
                     recordButton.setText(" START WORKOUT ");
-                    mSecondTime = 0L;
-                    seconds = 0;
-                    minutes = 0;
-                    mSeconds = 0;
+                    editor.putBoolean("recordWorkout", true);
+                    editor.apply();
                     timer.setText("00:00:00");
-
+                    googleMap.clear();
+                    points.clear();
 //                    handler.removeCallbacks(timerRunnable);
                 }
             }
