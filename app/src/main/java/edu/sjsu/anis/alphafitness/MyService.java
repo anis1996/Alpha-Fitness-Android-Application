@@ -2,9 +2,11 @@ package edu.sjsu.anis.alphafitness;
 
 import android.Manifest;
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -26,8 +28,15 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
+import edu.sjsu.anis.alphafitness.DataBase.RecordContract;
+
 
 public class MyService extends Service implements SensorEventListener{
+    static final double METER_PER_STEP_MEN = 0.762;
+    static final double METER_PER_STEP_WOMEN = 0.67;
+    static final double MILE_PER_METER = 0.000621371;
+
+
     //Timer
     int mSeconds, seconds, minutes;
     long mSecondTime, startTime, updateTime;
@@ -54,6 +63,12 @@ public class MyService extends Service implements SensorEventListener{
     int steps = 0 ;
 
 
+    //database
+    long totalTimes;
+    int totalWorkoutNumber;
+    float totalDistance;
+
+
     public static Boolean stat = true;
 
     public MyService() {
@@ -66,6 +81,18 @@ public class MyService extends Service implements SensorEventListener{
 
         sManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         stepSensor = sManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+
+        Cursor cursor = getContentResolver().query(MyContentProvider.CONTENT_URI, null, "_id = ?", new String[]{"1"}, RecordContract.Contracts._ID);
+
+
+        if (cursor.moveToFirst()) {
+
+            totalTimes = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.ALL_TIME_KEY_TIME));
+            totalWorkoutNumber = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.ALL_TIME_KEY_NUM_OF_WORKOUTS));
+            totalDistance = cursor.getFloat(cursor.getColumnIndex(RecordContract.Contracts.ALL_TIME_KEY_DISTANCE));
+
+
+        }
 
 
        mBinder = new IMyAidlInterface.Stub() {
@@ -97,6 +124,10 @@ public class MyService extends Service implements SensorEventListener{
                WorkoutFragment.polyLineHandler.removeCallbacks(locationRunnable);
                WorkoutFragment.handler.sendMessage(msg1);
                steps = 0;
+               ContentValues contentValues = new ContentValues();
+               totalWorkoutNumber += 1;
+               contentValues.put(RecordContract.Contracts.ALL_TIME_KEY_NUM_OF_WORKOUTS, totalWorkoutNumber);
+               getContentResolver().update(MyContentProvider.CONTENT_URI, contentValues, "_id = ?", new String[] {"1"});
            }
 
        };
@@ -156,11 +187,20 @@ public class MyService extends Service implements SensorEventListener{
                 Message msg = new Message();
                 msg.obj = result;
                 WorkoutFragment.handler.sendMessage(msg);
-                WorkoutFragment.handler.postDelayed(this, 10);
 
                 Message stepMsg = new Message();
-                stepMsg.obj = steps;
+                double calDistance = steps * METER_PER_STEP_MEN;
+                calDistance *= MILE_PER_METER ;
+                stepMsg.obj = calDistance;
                 WorkoutFragment.distanceHandler.sendMessage(stepMsg);
+
+
+                ContentValues contentValues = new ContentValues();
+                totalDistance += calDistance;
+                contentValues.put(RecordContract.Contracts.ALL_TIME_KEY_DISTANCE, totalDistance );
+                getContentResolver().update(MyContentProvider.CONTENT_URI, contentValues, "_id = ?", new String[] {"1"});
+
+                WorkoutFragment.handler.postDelayed(this,20);
             }
         }
     };
@@ -189,5 +229,5 @@ public class MyService extends Service implements SensorEventListener{
 
     }
 
-    
+
 }

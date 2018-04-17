@@ -30,9 +30,13 @@ public class MyDataBase extends SQLiteOpenHelper {
                 + Contracts.KEY_GENDER + " TEXT,"
                 + Contracts.KEY_WEIGHT + " INT,"
                 + Contracts.KEY_DISTANCE + " FLOAT,"
-                + Contracts.KEY_TIME + " TEXT,"
+                + Contracts.KEY_TIME + " LONG,"
                 + Contracts.KEY_NUM_OF_WORKOUTS + " INTEGER,"
-                + Contracts.KEY_CALORIES_BURNED + " FLOAT"
+                + Contracts.KEY_CALORIES_BURNED + " FLOAT,"
+                + Contracts.ALL_TIME_KEY_DISTANCE + " FLOAT,"
+                + Contracts.ALL_TIME_KEY_TIME + " LONG,"
+                + Contracts.ALL_TIME_KEY_NUM_OF_WORKOUTS + " INTEGER,"
+                + Contracts.ALL_TIME_KEY_CALORIES_BURNED + " FLOAT"
                 + ")";
 
         sqLiteDatabase.execSQL(CREATE_AVERAGE_WEEKLY_TABLE);

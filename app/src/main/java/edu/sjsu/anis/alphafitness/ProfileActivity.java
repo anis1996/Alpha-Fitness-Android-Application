@@ -3,6 +3,7 @@ package edu.sjsu.anis.alphafitness;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.Handler;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import edu.sjsu.anis.alphafitness.DataBase.MyDataBase;
+import edu.sjsu.anis.alphafitness.DataBase.RecordContract;
 import edu.sjsu.anis.alphafitness.DataBase.RecordContract.Contracts;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -24,6 +26,10 @@ public class ProfileActivity extends AppCompatActivity {
     private TextView avgDistanceTV, avgTimeTV, avgWorkoutsTV, avgCaloriesBurnedTV;
     private TextView allTimeDistanceTV, allTimeTimeTV, allTimeWorkoutsTV, allTimeCaloriesBurnedTV;
     private ImageView profileIcon;
+
+
+
+    private Handler workoutHandler ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +53,10 @@ public class ProfileActivity extends AppCompatActivity {
         allTimeCaloriesBurnedTV = (TextView) findViewById(R.id.total_calories);
         profileIcon = (ImageView) findViewById(R.id.imageView);
 
+
+
+
+
         Cursor cursor = getContentResolver().query(MyContentProvider.CONTENT_URI, null, "_id = ?", new String[]{"1"}, Contracts._ID);
 
 
@@ -64,6 +74,9 @@ public class ProfileActivity extends AppCompatActivity {
 
 
         }
+
+        workoutHandler = new Handler();
+        workoutHandler.postDelayed(updateAvgWeeklyRunnable, 1000);
 
     }
 
@@ -92,6 +105,25 @@ public class ProfileActivity extends AppCompatActivity {
 
 
     }
+
+    private Runnable updateAvgWeeklyRunnable = new Runnable() {
+        @Override
+        public void run() {
+            Cursor cursor = getContentResolver().query(MyContentProvider.CONTENT_URI, null, "_id = ?", new String[]{"1"}, Contracts._ID);
+
+
+            if (cursor.moveToFirst()) {
+
+
+               long totalTimes = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.ALL_TIME_KEY_TIME));
+                int totalWorkoutNumber = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.ALL_TIME_KEY_NUM_OF_WORKOUTS));
+               float totalDistance = cursor.getFloat(cursor.getColumnIndex(RecordContract.Contracts.ALL_TIME_KEY_DISTANCE));
+
+               allTimeDistanceTV.setText(String.valueOf(totalDistance));
+               allTimeWorkoutsTV.setText(String.valueOf(totalWorkoutNumber));
+            }
+        }
+    };
 
 
 

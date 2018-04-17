@@ -25,6 +25,12 @@ public final class RecordContract {
         public static final String TABLE_ALL_TIME = "All_Time";
 
 
+        public static final String ALL_TIME_KEY_DISTANCE = "totaldistance";
+        public static final String ALL_TIME_KEY_TIME = "totaltime";
+        public static final String ALL_TIME_KEY_NUM_OF_WORKOUTS = "totalworkouts";
+        public static final String ALL_TIME_KEY_CALORIES_BURNED = "totalcalories_burned";
+
+
         public static final String KEY_STEPS = "steps";
     }
 

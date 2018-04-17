@@ -81,9 +81,7 @@ public class WorkoutFragment extends Fragment {
     boolean record ;
     TextView distanceUI;
 
-    static final double METER_PER_STEP_MEN = 0.762;
-    static final double METER_PER_STEP_WOMEN = 0.67;
-    static final double MILE_PER_METER = 0.000621371;
+
 
     //Google Map
     private GoogleMap googleMap;
@@ -196,7 +194,7 @@ public class WorkoutFragment extends Fragment {
                     ActivityCompat.requestPermissions(getActivity(),
                             new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                             PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-
+                    return ;
 
                 }
 
@@ -272,11 +270,10 @@ public class WorkoutFragment extends Fragment {
             @Override
             public void handleMessage(Message msg) {
 
-                int step = (int) msg.obj;
-                double distance = step * METER_PER_STEP_MEN;
-                distance *= MILE_PER_METER ;
+                double calDistance = (double) msg.obj;
+
 //                Toast.makeText(getActivity(), "Distance: " + distance, Toast.LENGTH_SHORT).show();
-                distanceUI.setText(String.format("%.3f", distance));
+                distanceUI.setText(String.format("%.3f", calDistance));
 
             }
         };
@@ -327,6 +324,7 @@ public class WorkoutFragment extends Fragment {
                     recordButton.setText(" START WORKOUT ");
                     editor.putBoolean("recordWorkout", true);
                     editor.apply();
+                    distanceUI.setText("0.000");
                     timer.setText("00:00:00");
                     googleMap.clear();
                     points.clear();
@@ -348,6 +346,10 @@ public class WorkoutFragment extends Fragment {
         contentValues.put(Contracts.KEY_CALORIES_BURNED, 0);
         contentValues.put(Contracts.KEY_NUM_OF_WORKOUTS, 0);
         contentValues.put(Contracts.KEY_TIME, "0");
+        contentValues.put(Contracts.ALL_TIME_KEY_DISTANCE, 0);
+        contentValues.put(Contracts.ALL_TIME_KEY_CALORIES_BURNED, 0);
+        contentValues.put(Contracts.ALL_TIME_KEY_NUM_OF_WORKOUTS, 0);
+        contentValues.put(Contracts.ALL_TIME_KEY_TIME, "0");
 
 
         getActivity().getContentResolver().insert(MyContentProvider.CONTENT_URI, contentValues);
