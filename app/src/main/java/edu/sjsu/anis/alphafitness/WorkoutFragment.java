@@ -79,8 +79,11 @@ public class WorkoutFragment extends Fragment {
     TextView timer;
     Button recordButton;
     boolean record ;
+    TextView distanceUI;
 
-
+    static final double METER_PER_STEP_MEN = 0.762;
+    static final double METER_PER_STEP_WOMEN = 0.67;
+    static final double MILE_PER_METER = 0.000621371;
 
     //Google Map
     private GoogleMap googleMap;
@@ -93,9 +96,10 @@ public class WorkoutFragment extends Fragment {
 
 
 
-    //
+    //handlers
     static Handler handler;
     static Handler polyLineHandler;
+    static Handler distanceHandler;
 
 
     private SharedPreferences sharedPreferences;
@@ -135,6 +139,7 @@ public class WorkoutFragment extends Fragment {
 
         timer = (TextView) view.findViewById(R.id.duration);
         recordButton = (Button) view.findViewById(R.id.recordButton);
+        distanceUI = (TextView) view.findViewById(R.id.distance);
 
         MapView mMapView = (MapView) view.findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
@@ -233,6 +238,7 @@ public class WorkoutFragment extends Fragment {
         {
             @Override
             public void handleMessage(Message msg) {
+
                 timer.setText((String) msg.obj);
 
             }
@@ -260,6 +266,21 @@ public class WorkoutFragment extends Fragment {
                 }
             }
         };
+
+        distanceHandler = new Handler()
+        {
+            @Override
+            public void handleMessage(Message msg) {
+
+                int step = (int) msg.obj;
+                double distance = step * METER_PER_STEP_MEN;
+                distance *= MILE_PER_METER ;
+//                Toast.makeText(getActivity(), "Distance: " + distance, Toast.LENGTH_SHORT).show();
+                distanceUI.setText(String.format("%.3f", distance));
+
+            }
+        };
+
 
 
         remoteConnection = new RemoteConnection();

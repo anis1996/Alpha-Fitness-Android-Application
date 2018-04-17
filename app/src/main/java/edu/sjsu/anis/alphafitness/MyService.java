@@ -5,6 +5,10 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -23,11 +27,13 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 
 
-public class MyService extends Service {
+public class MyService extends Service implements SensorEventListener{
     //Timer
     int mSeconds, seconds, minutes;
     long mSecondTime, startTime, updateTime;
     long TimeBuff = 0L;
+
+
 
     String result;
 
@@ -40,6 +46,13 @@ public class MyService extends Service {
     IMyAidlInterface.Stub mBinder;
 
 
+    //sensors
+    private SensorManager sManager;
+    private Sensor stepSensor;
+
+    //distance
+    int steps = 0 ;
+
 
     public static Boolean stat = true;
 
@@ -51,6 +64,9 @@ public class MyService extends Service {
         super.onCreate();
         points = new ArrayList<LatLng>();
 
+        sManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        stepSensor = sManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+
 
        mBinder = new IMyAidlInterface.Stub() {
            @Override
@@ -60,6 +76,8 @@ public class MyService extends Service {
                points = new ArrayList<LatLng>();
                stat = true;
                WorkoutFragment.polyLineHandler.postDelayed(locationRunnable,20);
+               sManager.registerListener(MyService.this, stepSensor, SensorManager.SENSOR_DELAY_FASTEST);
+               steps = 0;
 
                return ;
            }
@@ -75,10 +93,10 @@ public class MyService extends Service {
                minutes = 0;
                mSeconds = 0;
                points.clear();
-               Log.d("CCCCCCCCCCCCCCCCCCCCCC", "INSIDE STOPWOROUT");
+               sManager.unregisterListener(MyService.this, stepSensor);
                WorkoutFragment.polyLineHandler.removeCallbacks(locationRunnable);
                WorkoutFragment.handler.sendMessage(msg1);
-
+               steps = 0;
            }
 
        };
@@ -139,7 +157,37 @@ public class MyService extends Service {
                 msg.obj = result;
                 WorkoutFragment.handler.sendMessage(msg);
                 WorkoutFragment.handler.postDelayed(this, 10);
+
+                Message stepMsg = new Message();
+                stepMsg.obj = steps;
+                WorkoutFragment.distanceHandler.sendMessage(stepMsg);
             }
         }
     };
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+
+        Sensor sensor = event.sensor;
+        float[] values = event.values;
+        int value = -1;
+
+        if (values.length > 0) {
+            value = (int) values[0];
+        }
+
+
+        if (sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
+            steps++;
+
+        }
+
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+
+    }
+
+    
 }
