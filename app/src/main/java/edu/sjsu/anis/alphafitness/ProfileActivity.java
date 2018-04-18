@@ -121,6 +121,16 @@ public class ProfileActivity extends AppCompatActivity {
 
                allTimeDistanceTV.setText(String.valueOf(totalDistance));
                allTimeWorkoutsTV.setText(String.valueOf(totalWorkoutNumber));
+
+
+                int seconds = (int) (totalTimes / 1000);
+                int minutes = seconds / 60;
+                 seconds = seconds % 60;
+                int mSeconds = (int) (totalTimes % 100);
+                String result = String.format("" + String.format("%02d", minutes) + ":" + String.format("%02d", seconds)
+                        + ":" + String.format("%02d", mSeconds));
+                allTimeTimeTV.setText(result);
+                workoutHandler.postDelayed(updateAvgWeeklyRunnable, 1000);
             }
         }
     };

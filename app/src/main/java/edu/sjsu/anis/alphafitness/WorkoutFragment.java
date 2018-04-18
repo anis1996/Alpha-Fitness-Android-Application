@@ -270,7 +270,7 @@ public class WorkoutFragment extends Fragment {
             @Override
             public void handleMessage(Message msg) {
 
-                double calDistance = (double) msg.obj;
+                float calDistance = (float) msg.obj;
 
 //                Toast.makeText(getActivity(), "Distance: " + distance, Toast.LENGTH_SHORT).show();
                 distanceUI.setText(String.format("%.3f", calDistance));

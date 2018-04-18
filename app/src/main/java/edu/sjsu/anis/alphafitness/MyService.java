@@ -59,8 +59,10 @@ public class MyService extends Service implements SensorEventListener{
     private SensorManager sManager;
     private Sensor stepSensor;
 
-    //distance
+    //distance and time
     int steps = 0 ;
+    float initialDistance = 0;
+    long initialTime = 0;
 
 
     //database
@@ -105,6 +107,9 @@ public class MyService extends Service implements SensorEventListener{
                WorkoutFragment.polyLineHandler.postDelayed(locationRunnable,20);
                sManager.registerListener(MyService.this, stepSensor, SensorManager.SENSOR_DELAY_FASTEST);
                steps = 0;
+               initialTime = 0;
+               initialDistance = 0;
+
 
                return ;
            }
@@ -189,14 +194,20 @@ public class MyService extends Service implements SensorEventListener{
                 WorkoutFragment.handler.sendMessage(msg);
 
                 Message stepMsg = new Message();
-                double calDistance = steps * METER_PER_STEP_MEN;
+                float calDistance = steps * (float) METER_PER_STEP_MEN;
                 calDistance *= MILE_PER_METER ;
                 stepMsg.obj = calDistance;
                 WorkoutFragment.distanceHandler.sendMessage(stepMsg);
 
 
                 ContentValues contentValues = new ContentValues();
-                totalDistance += calDistance;
+                float dischange = (calDistance - initialDistance);
+                initialDistance = calDistance;
+                totalDistance = totalDistance + dischange;
+                long changeTime = (mSecondTime - initialTime) ;
+                initialTime = mSecondTime;
+                totalTimes += changeTime;
+                contentValues.put(RecordContract.Contracts.ALL_TIME_KEY_TIME, totalTimes);
                 contentValues.put(RecordContract.Contracts.ALL_TIME_KEY_DISTANCE, totalDistance );
                 getContentResolver().update(MyContentProvider.CONTENT_URI, contentValues, "_id = ?", new String[] {"1"});
 
