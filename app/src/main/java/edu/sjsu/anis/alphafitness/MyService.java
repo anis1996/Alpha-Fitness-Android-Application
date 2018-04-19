@@ -46,7 +46,7 @@ public class MyService extends Service implements SensorEventListener{
 
     String result;
 
-
+    //Location
     LocationManager locationManager;
     Location location;
     private ArrayList<LatLng> points = null;
@@ -70,6 +70,11 @@ public class MyService extends Service implements SensorEventListener{
     int totalWorkoutNumber;
     float totalDistance;
 
+    //weekly
+    long weeklyTimes;
+    int weeklyWorkoutNumber;
+    float weeklyDistance;
+
 
     public static Boolean stat = true;
 
@@ -92,6 +97,10 @@ public class MyService extends Service implements SensorEventListener{
             totalTimes = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.ALL_TIME_KEY_TIME));
             totalWorkoutNumber = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.ALL_TIME_KEY_NUM_OF_WORKOUTS));
             totalDistance = cursor.getFloat(cursor.getColumnIndex(RecordContract.Contracts.ALL_TIME_KEY_DISTANCE));
+
+            weeklyTimes = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.KEY_TIME));
+            weeklyWorkoutNumber = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.KEY_NUM_OF_WORKOUTS));
+            weeklyDistance = cursor.getFloat(cursor.getColumnIndex(RecordContract.Contracts.KEY_DISTANCE));
 
 
         }
@@ -129,9 +138,13 @@ public class MyService extends Service implements SensorEventListener{
                WorkoutFragment.polyLineHandler.removeCallbacks(locationRunnable);
                WorkoutFragment.handler.sendMessage(msg1);
                steps = 0;
-               ContentValues contentValues = new ContentValues();
+
                totalWorkoutNumber += 1;
+               weeklyWorkoutNumber += 1;
+               ContentValues contentValues = new ContentValues();
                contentValues.put(RecordContract.Contracts.ALL_TIME_KEY_NUM_OF_WORKOUTS, totalWorkoutNumber);
+               contentValues.put(RecordContract.Contracts.KEY_NUM_OF_WORKOUTS, weeklyWorkoutNumber);
+
                getContentResolver().update(MyContentProvider.CONTENT_URI, contentValues, "_id = ?", new String[] {"1"});
            }
 
@@ -204,11 +217,15 @@ public class MyService extends Service implements SensorEventListener{
                 float dischange = (calDistance - initialDistance);
                 initialDistance = calDistance;
                 totalDistance = totalDistance + dischange;
+                weeklyDistance = weeklyDistance + dischange;
                 long changeTime = (mSecondTime - initialTime) ;
                 initialTime = mSecondTime;
                 totalTimes += changeTime;
+                weeklyTimes += changeTime;
                 contentValues.put(RecordContract.Contracts.ALL_TIME_KEY_TIME, totalTimes);
                 contentValues.put(RecordContract.Contracts.ALL_TIME_KEY_DISTANCE, totalDistance );
+                contentValues.put(RecordContract.Contracts.KEY_TIME, weeklyTimes);
+                contentValues.put(RecordContract.Contracts.KEY_DISTANCE, weeklyDistance );
                 getContentResolver().update(MyContentProvider.CONTENT_URI, contentValues, "_id = ?", new String[] {"1"});
 
                 WorkoutFragment.handler.postDelayed(this,20);

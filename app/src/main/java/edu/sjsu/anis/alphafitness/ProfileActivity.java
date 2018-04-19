@@ -115,21 +115,39 @@ public class ProfileActivity extends AppCompatActivity {
             if (cursor.moveToFirst()) {
 
 
+                //total workout
                long totalTimes = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.ALL_TIME_KEY_TIME));
                 int totalWorkoutNumber = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.ALL_TIME_KEY_NUM_OF_WORKOUTS));
                float totalDistance = cursor.getFloat(cursor.getColumnIndex(RecordContract.Contracts.ALL_TIME_KEY_DISTANCE));
 
-               allTimeDistanceTV.setText(String.valueOf(totalDistance));
+               allTimeDistanceTV.setText(String.format("%.2f", totalDistance));
                allTimeWorkoutsTV.setText(String.valueOf(totalWorkoutNumber));
-
 
                 int seconds = (int) (totalTimes / 1000);
                 int minutes = seconds / 60;
                  seconds = seconds % 60;
                 int mSeconds = (int) (totalTimes % 100);
-                String result = String.format("" + String.format("%02d", minutes) + ":" + String.format("%02d", seconds)
-                        + ":" + String.format("%02d", mSeconds));
+                String result = String.format("" + String.format("%02d Min", minutes) + ":" + String.format("%02d Sec", seconds));
                 allTimeTimeTV.setText(result);
+
+                //weekly workout
+                long weeklyTimes = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.KEY_TIME));
+                int weeklyWorkoutNumber = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.KEY_NUM_OF_WORKOUTS));
+                float weeklyDistance = cursor.getFloat(cursor.getColumnIndex(RecordContract.Contracts.KEY_DISTANCE));
+
+                avgDistanceTV.setText(String.format("%.2f",weeklyDistance));
+                avgWorkoutsTV.setText(String.valueOf(weeklyWorkoutNumber));
+
+                int Wseconds = (int) (weeklyTimes / 1000);
+                int Wminutes = Wseconds / 60;
+                Wseconds = Wseconds % 60;
+                int WmSeconds = (int) (weeklyTimes % 100);
+                String Wresult = String.format("" + String.format("%02d Min", Wminutes) + ":" + String.format("%02d Sec", Wseconds));
+                avgTimeTV.setText(Wresult);
+
+
+
+
                 workoutHandler.postDelayed(updateAvgWeeklyRunnable, 1000);
             }
         }
