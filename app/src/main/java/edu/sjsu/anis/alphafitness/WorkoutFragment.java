@@ -236,9 +236,7 @@ public class WorkoutFragment extends Fragment {
         {
             @Override
             public void handleMessage(Message msg) {
-
                 timer.setText((String) msg.obj);
-
             }
         };
 
@@ -248,8 +246,6 @@ public class WorkoutFragment extends Fragment {
             public void handleMessage(Message msg) {
 
 ///                points = (ArrayList<LatLng> ) msg.obj;
-
-
                 PolylineOptions options = new PolylineOptions().width(10).color(Color.RED).geodesic(true);
                 for (int i = 0; i < points.size() ; i++) {
                     LatLng point = points.get(i);
@@ -258,8 +254,6 @@ public class WorkoutFragment extends Fragment {
                 if(googleMap.getMyLocation() != null) {
                     points.add(new LatLng(googleMap.getMyLocation().getLatitude(), googleMap.getMyLocation().getLongitude()));
                     Polyline line = googleMap.addPolyline(options);
-
-
                     line.setPoints(points);
                 }
             }
@@ -271,13 +265,11 @@ public class WorkoutFragment extends Fragment {
             public void handleMessage(Message msg) {
 
                 float calDistance = (float) msg.obj;
-
 //                Toast.makeText(getActivity(), "Distance: " + distance, Toast.LENGTH_SHORT).show();
                 distanceUI.setText(String.format("%.3f", calDistance));
 
             }
         };
-
 
 
         remoteConnection = new RemoteConnection();
@@ -350,8 +342,6 @@ public class WorkoutFragment extends Fragment {
         contentValues.put(Contracts.ALL_TIME_KEY_CALORIES_BURNED, 0);
         contentValues.put(Contracts.ALL_TIME_KEY_NUM_OF_WORKOUTS, 0);
         contentValues.put(Contracts.ALL_TIME_KEY_TIME, "0");
-
-
         getActivity().getContentResolver().insert(MyContentProvider.CONTENT_URI, contentValues);
     }
 
@@ -360,25 +350,6 @@ public class WorkoutFragment extends Fragment {
         super.onResume();
         Log.d("CCCCCCCCCCCCCCCCCCCCCC", "RESUME CCCCCCC");
 
-
     }
-
-//    public Runnable timerRunnable = new Runnable() {
-//        @Override
-//        public void run() {
-//            mSecondTime = SystemClock.uptimeMillis() - startTime;
-//            updateTime = TimeBuff + mSecondTime;
-//            seconds = (int) (updateTime / 1000);
-//            minutes = seconds / 60;
-//            seconds = seconds % 60;
-//            mSeconds = (int) (updateTime % 100);
-//            timer.setText(String.format("" + String.format("%02d", minutes) + ":" + String.format("%02d", seconds)
-//                    + ":" + String.format("%02d", mSeconds)));
-//            handler.postDelayed(this, 0);
-//        }
-//    };
-
-
-
 
 }

@@ -70,10 +70,19 @@ public class MyService extends Service implements SensorEventListener{
     int totalWorkoutNumber;
     float totalDistance;
 
-    //weekly
+    //weekly database
     long weeklyTimes;
     int weeklyWorkoutNumber;
     float weeklyDistance;
+
+
+
+    //Calculate Calories
+    double userWeight;
+    float initialCalories = 0;
+    //database Calories
+    float totalCalories;
+    float weeklyCalories;
 
 
     public static Boolean stat = true;
@@ -97,12 +106,15 @@ public class MyService extends Service implements SensorEventListener{
             totalTimes = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.ALL_TIME_KEY_TIME));
             totalWorkoutNumber = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.ALL_TIME_KEY_NUM_OF_WORKOUTS));
             totalDistance = cursor.getFloat(cursor.getColumnIndex(RecordContract.Contracts.ALL_TIME_KEY_DISTANCE));
+            totalCalories = cursor.getFloat(cursor.getColumnIndex(RecordContract.Contracts.ALL_TIME_KEY_CALORIES_BURNED));
+
 
             weeklyTimes = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.KEY_TIME));
             weeklyWorkoutNumber = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.KEY_NUM_OF_WORKOUTS));
             weeklyDistance = cursor.getFloat(cursor.getColumnIndex(RecordContract.Contracts.KEY_DISTANCE));
+            weeklyCalories = cursor.getFloat(cursor.getColumnIndex(RecordContract.Contracts.KEY_CALORIES_BURNED));
 
-
+            userWeight = cursor.getDouble(cursor.getColumnIndex(RecordContract.Contracts.KEY_WEIGHT));
         }
 
 
@@ -118,7 +130,6 @@ public class MyService extends Service implements SensorEventListener{
                steps = 0;
                initialTime = 0;
                initialDistance = 0;
-
 
                return ;
            }
@@ -212,7 +223,7 @@ public class MyService extends Service implements SensorEventListener{
                 stepMsg.obj = calDistance;
                 WorkoutFragment.distanceHandler.sendMessage(stepMsg);
 
-
+                //updating database
                 ContentValues contentValues = new ContentValues();
                 float dischange = (calDistance - initialDistance);
                 initialDistance = calDistance;
@@ -222,6 +233,19 @@ public class MyService extends Service implements SensorEventListener{
                 initialTime = mSecondTime;
                 totalTimes += changeTime;
                 weeklyTimes += changeTime;
+
+                //Calories
+//                float caloriesBurned = (float) ((steps/1000) * (userWeight/200) * 50);
+                float caloriesBurned = (float) (steps * 0.05);
+                float calChange = (caloriesBurned - initialCalories);
+                initialCalories = caloriesBurned;
+                totalCalories = totalCalories + calChange;
+                weeklyCalories = weeklyCalories + calChange;
+
+
+
+                contentValues.put(RecordContract.Contracts.ALL_TIME_KEY_CALORIES_BURNED, totalCalories);
+                contentValues.put(RecordContract.Contracts.KEY_CALORIES_BURNED, weeklyCalories);
                 contentValues.put(RecordContract.Contracts.ALL_TIME_KEY_TIME, totalTimes);
                 contentValues.put(RecordContract.Contracts.ALL_TIME_KEY_DISTANCE, totalDistance );
                 contentValues.put(RecordContract.Contracts.KEY_TIME, weeklyTimes);
@@ -243,7 +267,6 @@ public class MyService extends Service implements SensorEventListener{
         if (values.length > 0) {
             value = (int) values[0];
         }
-
 
         if (sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
             steps++;
