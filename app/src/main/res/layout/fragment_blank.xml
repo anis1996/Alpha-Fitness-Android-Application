@@ -22,7 +22,6 @@
                 android:layout_gravity="center">
 
             <TextView
-                android:id="@+id/workoutDetailLabel"
                 android:layout_width="0dp"
                 android:layout_height="65dp"
                 android:layout_weight="1"
@@ -52,7 +51,7 @@
                     android:text="AVG" />
 
                 <TextView
-                    android:id="@+id/detailAvgValue"
+                    android:id="@+id/avgValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
@@ -101,12 +100,12 @@
                         android:text="MAX" />
 
                     <TextView
-                        android:id="@+id/detailMaxValue"
+                        android:id="@+id/maxValue"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
-                        android:text="1:57"
+                        android:text="0:00"
                         android:textStyle="bold" />
 
                     <TextView
@@ -138,7 +137,7 @@
                         android:text="MIN" />
 
                     <TextView
-                        android:id="@+id/detailMinValue"
+                        android:id="@+id/minValue"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -165,7 +164,11 @@
             android:background="@color/colorPrimaryDark"/>
 
 
-
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/chart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+             />
 
 
     </LinearLayout>
