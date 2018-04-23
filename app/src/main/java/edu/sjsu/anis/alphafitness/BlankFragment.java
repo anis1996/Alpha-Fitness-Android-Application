@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -36,6 +37,13 @@ public class BlankFragment extends Fragment implements OnChartGestureListener, O
     private LineChart mChart;
 
     private float caloriesFromDatabase;
+    private float oldCalories = 0;
+
+    Cursor cursor;
+
+
+    //Handler
+    Handler workoutDetailsHandler = new Handler() ;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -48,7 +56,9 @@ public class BlankFragment extends Fragment implements OnChartGestureListener, O
                              Bundle savedInstanceState) {
 
 
-        Cursor cursor = getActivity().getContentResolver().query(MyContentProvider.CONTENT_URI, null, "_id = ?", new String[]{"1"}, RecordContract.Contracts._ID);
+
+
+         cursor = getActivity().getContentResolver().query(MyContentProvider.CONTENT_URI, null, "_id = ?", new String[]{"1"}, RecordContract.Contracts._ID);
 
 
         if (cursor.moveToFirst()) {
@@ -56,6 +66,9 @@ public class BlankFragment extends Fragment implements OnChartGestureListener, O
             caloriesFromDatabase = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.KEY_CALORIES_BURNED));
 
         }
+
+        oldCalories = caloriesFromDatabase;
+
 
 
 
@@ -79,12 +92,10 @@ public class BlankFragment extends Fragment implements OnChartGestureListener, O
 
         ArrayList<Entry> caloriesValues = new ArrayList<>();
         caloriesValues.add(new Entry(0,0f));
-        caloriesValues.add(new Entry(1, caloriesFromDatabase));
-
 
         ArrayList<Entry> stepValues = new ArrayList<>();
         stepValues.add(new Entry(0,0f));
-        stepValues.add(new Entry(1, 10f));
+
 
 
         LineDataSet set1 = createCaloriesSet(caloriesValues);
@@ -100,49 +111,13 @@ public class BlankFragment extends Fragment implements OnChartGestureListener, O
         mChart.setData(line);
 
 
-//        // set an alternative background color
-//        mChart.setBackgroundColor(Color.WHITE);
-//
-//        LineData data = new LineData();
-//        data.setValueTextColor(Color.BLACK);
-//
-//        mChart.setData(data);
-//
-//        // get the legend (only possible after setting data)
-//        Legend l = mChart.getLegend();
-//
-//        // modify the legend ...
-//        l.setForm(Legend.LegendForm.LINE);
-//        l.setTextColor(Color.BLACK);
-//
-//        XAxis xl = mChart.getXAxis();
-//        xl.setTextColor(Color.BLACK);
-//        xl.setDrawGridLines(false);
-//        xl.setAxisMinimum(0f);
-//        xl.setAvoidFirstLastClipping(true);
-//        xl.setEnabled(true);
-//        xl.setDrawLabels(true);
-//        xl.setGranularity(1f);
-//        xl.setXOffset(10f);
-//        xl.setYOffset(0f);
-
-
-//        YAxis leftAxis = mChart.getAxisLeft();
-//        leftAxis.setTextColor(Color.BLACK);
-//        leftAxis.setAxisMinimum(0f);
-//        leftAxis.setDrawGridLines(true);
-//        leftAxis.setGranularity(1f);
-//
-//        YAxis rightAxis = mChart.getAxisRight();
-//        rightAxis.setEnabled(false);
-
-        updateChartUI();
+       workoutDetailsHandler.postDelayed(updateUI, 5000);
 
 
          return view ;
     }
 
-    private void updateChartUI() {
+    private void updateChartUI(float caloriesBurned) {
         LineData data = mChart.getData();
 
         if (data != null) {
@@ -151,38 +126,11 @@ public class BlankFragment extends Fragment implements OnChartGestureListener, O
             ILineDataSet caloriesSet = data.getDataSetByIndex(0);
             ILineDataSet stepsSet = data.getDataSetByIndex(1);
 
-            caloriesSet.addEntry(new Entry(3f, 4f));
-            data.addEntry(new Entry(3f, 4f), 0);
+           //caloriesSet.addEntry(new Entry(3f, 4f));
+            int steps = (int) (caloriesBurned/0.05);
 
-
-            // set.addEntry(...); // can be called as well
-
-//            if (caloriesSet == null || stepsSet == null) {
-//               // caloriesSet = createCaloriesSet();
-////                stepsSet = createStepsSet();
-//                data.addDataSet(caloriesSet);
-//                data.addDataSet(stepsSet);
-//
-//                Entry e = new Entry(0f, 0);
-//                data.addEntry(e, 0);
-//                data.addEntry(e, 1);
-////            }
-//
-//            //Add new data entries to Calories Set
-//            int currentCaloriesSetSize = caloriesSet.getEntryCount();
-//            for (int i=currentCaloriesSetSize; i<MainScreenActivity.caloriesEntries.size(); i++) {
-//                Entry e = MainScreenActivity.caloriesEntries.get(i);
-//                data.addEntry(e, 0);
-//            }
-//
-//            //Add new data entries to Steps Set
-//            int currentStepCountSetSize = stepsSet.getEntryCount();
-//            for (int i=currentStepCountSetSize; i<MainScreenActivity.stepsEntries.size(); i++) {
-//                Entry e = MainScreenActivity.stepsEntries.get(i);
-//                data.addEntry(e, 1);
-
-
-
+            data.addEntry(new Entry(data.getDataSetByIndex(0).getEntryCount()*5, caloriesBurned), 0);
+            data.addEntry(new Entry(data.getDataSetByIndex(1).getEntryCount()*5, steps), 1);
 
             data.notifyDataChanged();
 
@@ -236,6 +184,29 @@ public class BlankFragment extends Fragment implements OnChartGestureListener, O
         set.setValueTextSize(9f);
         return set;
     }
+
+
+    public Runnable updateUI = new Runnable() {
+        @Override
+        public void run() {
+
+            if(getActivity() != null) {
+                cursor = getActivity().getContentResolver().query(MyContentProvider.CONTENT_URI, null, "_id = ?", new String[]{"1"}, RecordContract.Contracts._ID);
+
+                if (cursor.moveToFirst()) {
+
+                    caloriesFromDatabase = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.KEY_CALORIES_BURNED));
+
+                }
+
+                updateChartUI(caloriesFromDatabase - oldCalories);
+                oldCalories = caloriesFromDatabase;
+
+                workoutDetailsHandler.postDelayed(updateUI, 25000);
+            }
+
+        }
+    };
 
     @Override
     public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
