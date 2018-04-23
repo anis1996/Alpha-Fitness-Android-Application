@@ -37,6 +37,10 @@ public class MyService extends Service implements SensorEventListener{
     static final double MILE_PER_METER = 0.000621371;
 
 
+
+    static ArrayList<LatLng> allPoints = new ArrayList<>();
+
+
     //Timer
     int mSeconds, seconds, minutes;
     long mSecondTime, startTime, updateTime;

@@ -88,7 +88,7 @@ public class WorkoutFragment extends Fragment {
     private LocationManager locationManager;
     Location location;
     private FusedLocationProviderClient fusedLocationProviderClient;
-    ArrayList<LatLng> points = new ArrayList<>();
+
 
 
 
@@ -247,14 +247,14 @@ public class WorkoutFragment extends Fragment {
 
 ///                points = (ArrayList<LatLng> ) msg.obj;
                 PolylineOptions options = new PolylineOptions().width(10).color(Color.RED).geodesic(true);
-                for (int i = 0; i < points.size() ; i++) {
-                    LatLng point = points.get(i);
+                for (int i = 0; i < MyService.allPoints.size() ; i++) {
+                    LatLng point = MyService.allPoints.get(i);
                     options.add(point);
                 }
                 if(googleMap.getMyLocation() != null) {
-                    points.add(new LatLng(googleMap.getMyLocation().getLatitude(), googleMap.getMyLocation().getLongitude()));
+                    MyService.allPoints.add(new LatLng(googleMap.getMyLocation().getLatitude(), googleMap.getMyLocation().getLongitude()));
                     Polyline line = googleMap.addPolyline(options);
-                    line.setPoints(points);
+                    line.setPoints(MyService.allPoints);
                 }
             }
         };
@@ -319,7 +319,7 @@ public class WorkoutFragment extends Fragment {
                     distanceUI.setText("0.000");
                     timer.setText("00:00:00");
                     googleMap.clear();
-                    points.clear();
+                    MyService.allPoints.clear();
 //                    handler.removeCallbacks(timerRunnable);
                 }
             }
