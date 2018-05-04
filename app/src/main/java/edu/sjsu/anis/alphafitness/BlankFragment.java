@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -51,7 +52,7 @@ public class BlankFragment extends Fragment implements OnChartGestureListener, O
     int minValue = 0;
     int maxValue = 0;
 
-    
+
 
     //Database
     private float caloriesFromDatabase;
@@ -139,10 +140,14 @@ public class BlankFragment extends Fragment implements OnChartGestureListener, O
 
         ArrayList<Entry> caloriesValues = new ArrayList<>();
         caloriesValues.add(new Entry(0,0f));
+        caloriesValues.add(new Entry(1,2f));
+        caloriesValues.add(new Entry(2,2f));
 
 
         ArrayList<Entry> stepValues = new ArrayList<>();
         stepValues.add(new Entry(0,0f));
+        stepValues.add(new Entry(1,24f));
+        stepValues.add(new Entry(2,24f));
 
 
         LineDataSet set1 = createCaloriesSet(caloriesValues);
@@ -283,16 +288,18 @@ public class BlankFragment extends Fragment implements OnChartGestureListener, O
             if(getActivity() != null) {
                 cursor = getActivity().getContentResolver().query(MyContentProvider.CONTENT_URI, null, "_id = ?", new String[]{"1"}, RecordContract.Contracts._ID);
 
+
+
                 if (cursor.moveToFirst()) {
 
-                    caloriesFromDatabase = cursor.getInt(cursor.getColumnIndex(RecordContract.Contracts.KEY_CALORIES_BURNED));
+                    caloriesFromDatabase = cursor.getFloat(cursor.getColumnIndex(RecordContract.Contracts.KEY_CALORIES_BURNED));
 
                 }
 
                 updateChartUI(caloriesFromDatabase - oldCalories);
                 oldCalories = caloriesFromDatabase;
 
-                workoutDetailsHandler.postDelayed(runnableChartUI, 5000);
+                workoutDetailsHandler.postDelayed(runnableChartUI, 15000);
             }
 
         }
